@@ -1,10 +1,11 @@
 var month = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
 
-var cd; //current date
-var selectedMonth, selectedYear;
-var selectedDay;
-var monthIndex;
+var currentDate,
+    selectedMonth,
+    selectedYear,
+    selectedDay,
+    monthIndex;
 
 var selectedDayTD;
 
@@ -73,14 +74,14 @@ var loadDefaultCalendar = function () {
 
     createCalendarTab();
 
-    cd = new Date();
-    selectedMonth = cd.getMonth();
-    selectedYear = cd.getFullYear();
+    currentDate = new Date();
+    selectedMonth = currentDate.getMonth();
+    selectedYear = currentDate.getFullYear();
     monthIndex = selectedYear + "." + selectedMonth;
     $("p.month-name").text(month[selectedMonth] + " " + selectedYear);
    
-    var dayCount = new Date(cd.getFullYear(), cd.getMonth() + 1, 0).getDate();
-    var firstDay = new Date(cd.getFullYear(), cd.getMonth(), 1).getDay(); //sunday - 0, monday - 1
+    var dayCount = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+    var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay(); //sunday - 0, monday - 1
     loadMonthData();
     fillCalendar(firstDay, dayCount);
 };
@@ -140,13 +141,13 @@ var showDayContent = function (event) {
     var left = event.pageX - 180;
     if (event.pageY + 200 > $(window).height()) {
         top = event.pageY - 200;
-        $(".arrow-up").hide();
-        $(".arrow-down").show();
+        $("#day-content").removeClass("arrow-up");
+        $("#day-content").addClass("arrow-down");
     }
     else {
         top = event.pageY;
-        $(".arrow-up").show();
-        $(".arrow-down").hide();
+        $("#day-content").removeClass("arrow-down");
+        $("#day-content").addClass("arrow-up");
     }
 
     selectedDay = selectedDayTD.data("day");
@@ -156,7 +157,7 @@ var showDayContent = function (event) {
         var activities = monthDataObject[selectedDay];
         var i = 0;
         for (; i < activities.length; ++i) {
-            var activityContainer = $("<div></div>");
+            var activityContainer = $("<li></li>");
             $("<p></p>", { "text": activities[i], "contenteditable": "true" }).data("activity", i).appendTo(activityContainer);
             $("<img />", { "src": "images/delete.png", "title": "delete", "click": clickDeleteActivity }).appendTo(activityContainer);
             $("<img />", { "src": "images/save.png", "title": "save", "click": clickSaveActivity }).appendTo(activityContainer);

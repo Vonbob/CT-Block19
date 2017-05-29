@@ -89,7 +89,7 @@ td.highlight {
 
 #day-content {
     display: none;
-    position: fixed;
+    position: absolute;
     width: 360px;
     height: 200px;
     background-color: white;
@@ -103,19 +103,18 @@ div.day-header {
 }
 
 div.day-header > p.day-info {
-    float: left;
     font-family: cursive;
     margin-top: 2px;
     margin-bottom: 0;
-    margin-left: 140px;
+    text-align: center;
 }
 
 div.day-header > img {
+    position: absolute;
+    top: 4px;
+    right: 4px;
     width: 16px;
     height: 16px;
-    float: right;
-    margin-top: 6px;
-    margin-right: 8px;
     cursor: pointer;
 }
 
@@ -128,13 +127,10 @@ div.new-activity input[type="text"] {
     margin-top: 6px;
     margin-left: 4px;
     width: 280px;
-    float: left;
 }
 
 div.new-activity button {
-    float: right;
     margin-top: 6px;
-    margin-right: 4px;
     border: none;
     height: 21px;
     width: 65px;
@@ -144,7 +140,7 @@ div.new-activity button {
     border-radius: 2px;
 }
 
-div.day-activities {
+ul.day-activities {
     margin-top: 3px;
     width: 352px;
     height: 140px;
@@ -153,12 +149,7 @@ div.day-activities {
     padding-right: 2px;
 }
 
-div.day-activities > div {
-
-}
-
-div.day-activities img {
-    float: left;
+ul.day-activities img {
     width: 18px;
     height: 18px;
     margin-top: 6px;
@@ -166,8 +157,8 @@ div.day-activities img {
     cursor: pointer;
 }
 
-div.day-activities p {
-    float: left;
+ul.day-activities p {
+    display: inline-block;
     margin: 0;
     margin-bottom: 2px;
     padding: 2px;
@@ -180,8 +171,8 @@ div.day-activities p {
     font-size: 18px;
 }
 
-div.arrow-up {
-    display: none;
+.arrow-up:before {
+    content: "";
     position: absolute;
     left: 175px;
     top: -5px;
@@ -192,8 +183,8 @@ div.arrow-up {
     border-bottom: 5px solid black;
 }
 
-div.arrow-down {
-    display: none;
+.arrow-down:after {
+    content: "";
     position: absolute;
     left: 175px;
     top: 200px;
@@ -205,9 +196,9 @@ div.arrow-down {
 }
 
 p.copyright {
-    position: fixed;
+    position: absolute;
     bottom: 0;
-    width: 100%;
+    width: 99%;
     text-align: center;
     font-size: 12px;
 }
