@@ -105,10 +105,8 @@ var loadDefaultCalendar = function () {
     pointCurrentDay();
 };
 
-//selecting calendar for previous month 
-var loadPreviousMonth = function () {
-    clearCalendar();
-
+//changing month
+var prevMonth = function () {
     if (selectedMonth === 0) {
         selectedMonth = 11;
         selectedYear -= 1;
@@ -116,19 +114,9 @@ var loadPreviousMonth = function () {
     else {
         selectedMonth -= 1;
     }
-    monthIndex = selectedYear + "." + selectedMonth;
-    $("p.month-name").text(month[selectedMonth] + " " + selectedYear);
-
-    loadMonthData();
-    getMonthDaysInfo();
-    fillCalendar();
-    pointCurrentDay();
 };
 
-//selecting calendar for previous month
-var loadNextMonth = function () {
-    clearCalendar();
-
+var nextMonth = function () {
     if (selectedMonth === 11) {
         selectedMonth = 0;
         selectedYear += 1;
@@ -136,6 +124,20 @@ var loadNextMonth = function () {
     else {
         selectedMonth += 1;
     }
+};
+
+//loading particular month depending which navigation button was pressed
+var changeMonth = function (event) {
+    clearCalendar();
+    if (event.data.direction) {
+        if (event.data.direction === "prev") {
+            prevMonth();
+        }
+        else if (event.data.direction === "next") {
+            nextMonth();
+        }
+    }
+    
     monthIndex = selectedYear + "." + selectedMonth;
     $("p.month-name").text(month[selectedMonth] + " " + selectedYear);
 
@@ -270,8 +272,8 @@ var saveActivity = function (event) {
 }
 
 var addDOMEventListeners = function () {
-    $("button.prev").on("click", loadPreviousMonth);
-    $("button.next").on("click", loadNextMonth);
+    $("button.prev").on("click", {direction: "prev"}, changeMonth);
+    $("button.next").on("click", {direction: "next"}, changeMonth);
     $("table.calendar").on("click", "td.day", showDayContent);
     $("#day-content").on("click", function (event) { event.stopPropagation(); })
     $("#day-content").find(".day-header").on("click", "img", hideDayContent);
