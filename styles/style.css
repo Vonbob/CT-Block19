@@ -107,12 +107,17 @@ div.day-header > p.day-info {
     margin-top: 2px;
     margin-bottom: 0;
     text-align: center;
+    
 }
 
 div.day-header > img {
-    position: absolute;
+    /*position: absolute;
     top: 4px;
-    right: 4px;
+    right: 4px;*/
+
+    float: right;
+    margin-top: 4px;
+    margin-right: 4px;
     width: 16px;
     height: 16px;
     cursor: pointer;

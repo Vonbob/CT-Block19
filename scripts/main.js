@@ -5,26 +5,34 @@ var currentDate,
     selectedMonth,
     selectedYear,
     selectedDay,
-    monthIndex;
+    monthIndex; // YYYY.MM format - for indexing month data in localStorage
 
-var selectedDayTD;
+var monthDaysCount, //number of days in selected month
+    monthFirstDay; //first day of the week in selected month
+
+var selectedDayTD; //selected table cell 
 
 var dayContentVisible = false;
 
-var monthDataObject;
+var monthDataObject; //all month data loaded from localStorage for selected month
 
+
+
+/* creating month calendar */
+//structure in DOM
 var createCalendarTab = function () {
     var calTab = $("table.calendar");
     var i, j;
-    for (j = 1; j <= 6; ++j) {
+    for (i = 0; i < 6; i++) {
         var tr = $("<tr></tr>");
-        for (i = 1; i <= 7; ++i) {
+        for (j = 0; j < 7; j++) {
             tr.append($("<td></td>"));
         }
         tr.appendTo(calTab);
     }
 };
 
+// loading month data from localStorage
 var loadMonthData = function () {
     var value = localStorage.getItem(monthIndex);
     if (!value) {
@@ -32,64 +40,74 @@ var loadMonthData = function () {
         return;
     }
     monthDataObject = JSON.parse(value);
-}
+};
 
-var fillCalendar = function (first, count) {
+//get number of days in selected month and first day of the week in selected month
+var getMonthDaysInfo = function () {
+    monthDaysCount = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    monthFirstDay = new Date(selectedYear, selectedMonth, 1).getDay(); //sunday - 0, monday - 1
+};
+
+//putting data in the DOM 
+var fillCalendar = function () {
     var daysTD = $("table.calendar").find("td");
-    var tdIndex = first + 7;
-    var dayText = "1 <img src='images/activities.png' alt= '' />";
-    if (monthDataObject && monthDataObject[1] && monthDataObject[1].length > 0) {
-        daysTD.eq(tdIndex).addClass("act");
-    }
-    daysTD.eq(tdIndex).html(dayText).data("day", 1).addClass("day");
-    tdIndex += 1;
-    var day = 2;
-    for (; day <= count; ++day, ++tdIndex) {
-        var dayText = day + "<img src='images/activities.png' alt='' />";
+
+    //finding TD for the first day in the month
+    var tdIndex = monthFirstDay + 7;
+    var day = 1;
+
+    while (day <= monthDaysCount) {
+        var dayText = day + " <img src='images/activities.png' alt='' />";
+
+        //check if data object for current month has array with activities for particular day
+        //if yes put the icon inside td
         if (monthDataObject && monthDataObject[day] && monthDataObject[day].length > 0) {
             daysTD.eq(tdIndex).addClass("act");
         }
-        daysTD.eq(tdIndex).html(dayText).data("day", day).addClass("day");
-    }
 
-    pointCurrentDay();
+        //put day number inside td and associate day number with it
+        daysTD.eq(tdIndex).html(dayText).data("day", day).addClass("day");
+
+        day += 1;
+        tdIndex += 1;
+    }
 };
 
+//mark td with current day
 var pointCurrentDay = function () {
-
-    if ((selectedMonth == new Date().getMonth()) && (selectedYear == new Date().getFullYear())) {
-        
+    if ((selectedMonth == currentDate.getMonth()) && (selectedYear == currentDate.getFullYear())) {  
         var daysTD = $("table.calendar").find("td.day");
         daysTD.eq(new Date().getDate() - 1).addClass("current-day");
-
     }
 };
 
+//remove all content and classes from calendar td cells 
 var clearCalendar = function () {
-    $("table.calendar").find("tr:not(.days-of-week)").remove();
+    var daysTD = $("table.calendar").find("tr:not(.days-of-week)").find("td");
+    daysTD.empty();
+    daysTD.removeClass();
 }
 
-//after refreshing website
+//after first page load and refreshing website
 var loadDefaultCalendar = function () {
 
     createCalendarTab();
-
+    
     currentDate = new Date();
     selectedMonth = currentDate.getMonth();
     selectedYear = currentDate.getFullYear();
     monthIndex = selectedYear + "." + selectedMonth;
     $("p.month-name").text(month[selectedMonth] + " " + selectedYear);
-   
-    var dayCount = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-    var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay(); //sunday - 0, monday - 1
+    
     loadMonthData();
-    fillCalendar(firstDay, dayCount);
+    getMonthDaysInfo();
+    fillCalendar();
+    pointCurrentDay();
 };
 
 //selecting calendar for previous month 
 var loadPreviousMonth = function () {
     clearCalendar();
-    createCalendarTab();
 
     if (selectedMonth === 0) {
         selectedMonth = 11;
@@ -101,17 +119,15 @@ var loadPreviousMonth = function () {
     monthIndex = selectedYear + "." + selectedMonth;
     $("p.month-name").text(month[selectedMonth] + " " + selectedYear);
 
-    var dayCount = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-    var firstDay = new Date(selectedYear, selectedMonth, 1).getDay(); //sunday - 0, monday - 1
     loadMonthData();
-    fillCalendar(firstDay, dayCount);
-
+    getMonthDaysInfo();
+    fillCalendar();
+    pointCurrentDay();
 };
 
 //selecting calendar for previous month
 var loadNextMonth = function () {
     clearCalendar();
-    createCalendarTab();
 
     if (selectedMonth === 11) {
         selectedMonth = 0;
@@ -123,20 +139,19 @@ var loadNextMonth = function () {
     monthIndex = selectedYear + "." + selectedMonth;
     $("p.month-name").text(month[selectedMonth] + " " + selectedYear);
 
-    var dayCount = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-    var firstDay = new Date(selectedYear, selectedMonth, 1).getDay(); //sunday - 0, monday - 1
     loadMonthData();
-    fillCalendar(firstDay, dayCount);
+    getMonthDaysInfo();
+    fillCalendar();
+    pointCurrentDay();
 };
 
 //showing activities for selected day
 var showDayContent = function (event) {
     selectedDayTD = $(event.target);
-    if (!selectedDayTD.hasClass("day"))
-        return;
-
+    
     event.stopPropagation();
 
+    //checks if there is place to put day-window below clicked point
     var top;
     var left = event.pageX - 180;
     if (event.pageY + 200 > $(window).height()) {
@@ -150,17 +165,17 @@ var showDayContent = function (event) {
         $("#day-content").addClass("arrow-up");
     }
 
+    //checks if there are any activities loaded from localStorage for selected day
+    //add them to day-window
     selectedDay = selectedDayTD.data("day");
     $(".day-activities").empty();
     if (monthDataObject && monthDataObject[selectedDay]) {
-        
         var activities = monthDataObject[selectedDay];
-        var i = 0;
-        for (; i < activities.length; ++i) {
+        for (var i = 0; i < activities.length; ++i) {
             var activityContainer = $("<li></li>");
             $("<p></p>", { "text": activities[i], "contenteditable": "true" }).data("activity", i).appendTo(activityContainer);
-            $("<img />", { "src": "images/delete.png", "title": "delete", "click": clickDeleteActivity }).appendTo(activityContainer);
-            $("<img />", { "src": "images/save.png", "title": "save", "click": clickSaveActivity }).appendTo(activityContainer);
+            $("<img />", { "src": "images/delete.png", "title": "delete" }).addClass("delete-activity").appendTo(activityContainer);
+            $("<img />", { "src": "images/save.png", "title": "save" }).addClass("save-activity").appendTo(activityContainer);
             activityContainer.appendTo($(".day-activities"));
         }
     }
@@ -172,6 +187,7 @@ var showDayContent = function (event) {
     dayContentVisible = true;
 };
 
+//hides day-window when user clicks: anywhere on the page outside of the calendar, close icon on day window panel
 var hideDayContent = function () {
     if (!dayContentVisible)
         return;
@@ -185,55 +201,64 @@ var createActivity = function () {
     var activity = $("#new-activity-content").val().trim();
     if (activity === "")
         return;
+
+    //checks if there is data for current month, if not creates new data object
     if (!monthDataObject) {
         monthDataObject = {};
         monthDataObject[selectedDay] = [];
     }
+
+    //checks if there is data for selected day, if not creates new table for selected day
     if (!monthDataObject[selectedDay]) {
         monthDataObject[selectedDay] = [];
     }
+
+    //adds new user activity to data object
     var actIndex = monthDataObject[selectedDay].length;
     monthDataObject[selectedDay][actIndex] = activity;
     $("#new-activity-content").val("");
 
+    //saves it to localStorage
     localStorage.setItem(monthIndex, JSON.stringify(monthDataObject));
 
-    $(".day-activities").empty();
-    var activities = monthDataObject[selectedDay];
-    var i = 0;
-    for (; i < activities.length; ++i) {
-        var activityContainer = $("<div></div>");
-        $("<p></p>", { "text": activities[i], "contenteditable": "true" }).data("activity", i).appendTo($(activityContainer));
-        $("<img />", { "src": "images/delete.png", "title": "delete", "click": clickDeleteActivity }).appendTo(activityContainer);
-        $("<img />", { "src": "images/save.png", "title": "save", "click": clickSaveActivity }).appendTo(activityContainer);
-        activityContainer.appendTo($(".day-activities"));
-    }
+    //adds it to day window
+    var activityContainer = $("<li></li>");
+    $("<p></p>", { "text": activity, "contenteditable": "true" }).data("activity", actIndex).appendTo($(activityContainer));
+    $("<img />", { "src": "images/delete.png", "title": "delete"}).addClass("delete-activity").appendTo(activityContainer);
+    $("<img />", { "src": "images/save.png", "title": "save"}).addClass("save-activity").appendTo(activityContainer);
+    activityContainer.appendTo($(".day-activities"));
 
+    //adds icon to day TD
     if (!selectedDayTD.hasClass("act"))
         selectedDayTD.addClass("act");
 };
 
-var clickDeleteActivity = function (event) {
+//deleting activity from day window and from localStorage
+var deleteActivity = function (event) {
     var activityContainer = $(event.target).parent();
     var activityId = activityContainer.find("p").data("activity");
 
-    monthDataObject[selectedDay].splice(activityId, 1);
-    activityContainer.remove();
+    monthDataObject[selectedDay].splice(activityId, 1); //deletes activity from month data object
+    activityContainer.remove(); //removes it from the DOM
 
-    localStorage.setItem(monthIndex, JSON.stringify(monthDataObject));
+    localStorage.setItem(monthIndex, JSON.stringify(monthDataObject)); //saves modified month data object to localStorage
 
+    //if there are no more activities for selected day removes icon from day TD
     if (monthDataObject[selectedDay].length === 0) 
           selectedDayTD.removeClass("act");
 }
 
-var clickSaveActivity = function (event) {
+//saving changed activity content (if empty delete activity)
+var saveActivity = function (event) {
     var activityContainer = $(event.target).parent();
     var activityPar = activityContainer.find("p");
     var activityId = activityPar.data("activity");
+    //if activity content is empty delete entire activity
     if (activityPar.text().trim() === "") {
         monthDataObject[selectedDay].splice(activityId, 1);
         activityContainer.remove();
 
+        //if there are no more activities for this day remove icon from day TD
         if (monthDataObject[selectedDay].length === 0)
             selectedDayTD.removeClass("act");
     }
@@ -247,10 +272,15 @@ var clickSaveActivity = function (event) {
 var addDOMEventListeners = function () {
     $("button.prev").on("click", loadPreviousMonth);
     $("button.next").on("click", loadNextMonth);
-    $("table.calendar").on("click", "td", showDayContent);
+    $("table.calendar").on("click", "td.day", showDayContent);
     $("#day-content").on("click", function (event) { event.stopPropagation(); })
     $("#day-content").find(".day-header").on("click", "img", hideDayContent);
+
     $("#day-content").find(".new-activity").on("click", "button", createActivity);
+
+    $("#day-content").on("click", ".delete-activity", deleteActivity);
+    $("#day-content").on("click", ".save-activity", saveActivity);
+
     $(document).on("click", hideDayContent)
 };
 
