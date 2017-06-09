@@ -24,9 +24,9 @@ var createCalendarTab = function () {
     var calTab = $("table.calendar");
     var i, j;
     for (i = 0; i < 6; i++) {
-        var tr = $("<tr></tr>");
+        var tr = $("<tr>");
         for (j = 0; j < 7; j++) {
-            tr.append($("<td></td>"));
+            tr.append($("<td>"));
         }
         tr.appendTo(calTab);
     }
@@ -147,6 +147,15 @@ var changeMonth = function (event) {
     pointCurrentDay();
 };
 
+//adds activity content to day window 
+var addActivityToWindow = function (content, index) {
+    var activityContainer = $("<li>");
+    $("<p>", { "text": content, "contenteditable": "true" }).data("activity", index).appendTo($(activityContainer));
+    $("<img>", { "src": "images/delete.png", "title": "delete" }).addClass("delete-activity").appendTo(activityContainer);
+    $("<img>", { "src": "images/save.png", "title": "save" }).addClass("save-activity").appendTo(activityContainer);
+    activityContainer.appendTo($(".day-activities"));
+};
+
 //showing activities for selected day
 var showDayContent = function (event) {
     selectedDayTD = $(event.target);
@@ -174,11 +183,7 @@ var showDayContent = function (event) {
     if (monthDataObject && monthDataObject[selectedDay]) {
         var activities = monthDataObject[selectedDay];
         for (var i = 0; i < activities.length; ++i) {
-            var activityContainer = $("<li></li>");
-            $("<p></p>", { "text": activities[i], "contenteditable": "true" }).data("activity", i).appendTo(activityContainer);
-            $("<img />", { "src": "images/delete.png", "title": "delete" }).addClass("delete-activity").appendTo(activityContainer);
-            $("<img />", { "src": "images/save.png", "title": "save" }).addClass("save-activity").appendTo(activityContainer);
-            activityContainer.appendTo($(".day-activities"));
+            addActivityToWindow(activities[i], i);
         }
     }
 
@@ -224,11 +229,7 @@ var createActivity = function () {
     localStorage.setItem(monthIndex, JSON.stringify(monthDataObject));
 
     //adds it to day window
-    var activityContainer = $("<li></li>");
-    $("<p></p>", { "text": activity, "contenteditable": "true" }).data("activity", actIndex).appendTo($(activityContainer));
-    $("<img />", { "src": "images/delete.png", "title": "delete"}).addClass("delete-activity").appendTo(activityContainer);
-    $("<img />", { "src": "images/save.png", "title": "save"}).addClass("save-activity").appendTo(activityContainer);
-    activityContainer.appendTo($(".day-activities"));
+    addActivityToWindow(activity, actIndex);
 
     //adds icon to day TD
     if (!selectedDayTD.hasClass("act"))
@@ -255,6 +256,7 @@ var saveActivity = function (event) {
     var activityContainer = $(event.target).parent();
     var activityPar = activityContainer.find("p");
     var activityId = activityPar.data("activity");
+
     //if activity content is empty delete entire activity
     if (activityPar.text().trim() === "") {
         monthDataObject[selectedDay].splice(activityId, 1);
@@ -280,6 +282,7 @@ var addDOMEventListeners = function () {
 
     $("#day-content").find(".new-activity").on("click", "button", createActivity);
 
+
     $("#day-content").on("click", ".delete-activity", deleteActivity);
     $("#day-content").on("click", ".save-activity", saveActivity);
 
@@ -291,4 +294,4 @@ var main = function () {
     loadDefaultCalendar();
 };
 
-$(document).ready(main);
+$(main);
