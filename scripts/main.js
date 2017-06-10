@@ -10,13 +10,11 @@ var currentDate,
 var monthDaysCount, //number of days in selected month
     monthFirstDay; //first day of the week in selected month
 
+var pointerClass; //day window pointer position
 var selectedDayTD; //selected table cell 
-
 var dayContentVisible = false;
 
 var monthDataObject; //all month data loaded from localStorage for selected month
-
-
 
 /* creating month calendar */
 //structure in DOM
@@ -156,25 +154,68 @@ var addActivityToWindow = function (content, index) {
     activityContainer.appendTo($(".day-activities"));
 };
 
+//calculates day window left and right coordinates and class for pointer
+var getWindowPosition = function (pageX, pageY) {
+    var coordinates = {
+        left: 0,
+        top: 0
+    };
+
+    $("#day-content").removeClass("arrow-top arrow-bottom arrow-left arrow-right arrow-top-left arrow-top-right arrow-bottom-left arrow-bottom-right");
+
+    if ((pageY + 200 > $(window).height()) && (pageY - 200 < 0)) {
+        coordinates.top = pageY - 100;
+        pointerClass = "middle";
+    }
+    else if (pageY + 200 > $(window).height()) {
+        coordinates.top = pageY - 200;
+        pointerClass = "arrow-bottom";
+    }
+    else {
+        coordinates.top = pageY;
+        pointerClass = "arrow-top";
+    }
+
+    if (pageX - 180 < 0) {
+        coordinates.left = pageX;
+        if (pointerClass === "arrow-top") {
+            pointerClass = "arrow-top-left";
+        }
+        else if (pointerClass === "middle") {
+            pointerClass = "arrow-left";
+        }
+        else {
+            pointerClass = "arrow-bottom-left";
+        }
+    }
+    else if (pageX + 180 > $(window).width()) {
+        coordinates.left = pageX - 360;
+        if (pointerClass === "arrow-top") {
+            pointerClass = "arrow-top-right";
+        }
+        else if (pointerClass === "middle") {
+            pointerClass = "arrow-right";
+        }
+        else {
+            pointerClass = "arrow-bottom-right";
+        }
+    }
+    else {
+        coordinates.left = pageX - 180;
+    }
+
+    $("#day-content").addClass(pointerClass);
+
+    return coordinates;
+}
+
 //showing activities for selected day
 var showDayContent = function (event) {
     selectedDayTD = $(event.target);
     
     event.stopPropagation();
 
-    //checks if there is place to put day-window below clicked point
-    var top;
-    var left = event.pageX - 180;
-    if (event.pageY + 200 > $(window).height()) {
-        top = event.pageY - 200;
-        $("#day-content").removeClass("arrow-up");
-        $("#day-content").addClass("arrow-down");
-    }
-    else {
-        top = event.pageY;
-        $("#day-content").removeClass("arrow-down");
-        $("#day-content").addClass("arrow-up");
-    }
+    var coordinates = getWindowPosition(event.pageX, event.pageY);
 
     //checks if there are any activities loaded from localStorage for selected day
     //add them to day-window
@@ -187,7 +228,7 @@ var showDayContent = function (event) {
         }
     }
 
-    $("#day-content").css({ "left": left, "top": top });
+    $("#day-content").css({ "left": coordinates.left, "top": coordinates.top });
     $("#day-content").find("p.day-info").text(selectedDay + " " + month[selectedMonth] + " " + selectedYear);
     $("#day-content").show();
 
