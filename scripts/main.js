@@ -161,7 +161,7 @@ var getWindowPosition = function (pageX, pageY) {
         top: 0
     };
 
-    $("#day-content").removeClass("arrow-top arrow-bottom arrow-left arrow-right arrow-top-left arrow-top-right arrow-bottom-left arrow-bottom-right");
+    $("#day-content").removeClass(pointerClass);
 
     if ((pageY + 200 > $(window).height()) && (pageY - 200 < 0)) {
         coordinates.top = pageY - 100;
